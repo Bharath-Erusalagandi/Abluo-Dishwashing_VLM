@@ -1,0 +1,93 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dishspace"
+version = "0.1.0"
+description = "Fine-tuning layer for kitchen robotics grasp planning"
+readme = "README.md"
+license = {text = "Proprietary"}
+requires-python = ">=3.11"
+authors = [
+    {name = "DishSpace AI"}
+]
+
+dependencies = [
+    # API
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "pydantic>=2.10.0",
+    "python-multipart>=0.0.18",
+
+    # ML / Model
+    "torch>=2.5.0",
+    "transformers>=4.47.0",
+    "peft>=0.14.0",
+    "accelerate>=0.35.0",
+    "diffusers>=0.31.0",
+
+    # 3D / Vision
+    "open3d>=0.18.0",
+    "opencv-python>=4.10.0",
+    "numpy>=1.26.0",
+    "Pillow>=11.0.0",
+    "scipy>=1.14.0",
+
+    # Depth & Segmentation Foundation Models
+    "depth-anything-v2>=0.1.0",
+    "segment-anything-2>=0.1.0",
+    "groundingdino>=0.1.0",
+
+    # Simulation
+    "mujoco>=3.2.0",
+
+    # Data
+    "supabase>=2.3.0",
+    "httpx>=0.28.0",
+
+    # ROS Bridge
+    "roslibpy>=1.7.0",
+
+    # Utils
+    "python-dotenv>=1.0.0",
+    "structlog>=24.4.0",
+    "tenacity>=9.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "anyio[trio]>=4.0.0",
+    "pytest-cov>=4.1.0",
+    "ruff>=0.3.0",
+    "mypy>=1.8.0",
+    "httpx>=0.27.0",
+]
+demo = [
+    "streamlit>=1.31.0",
+    "plotly>=5.18.0",
+    "streamlit-webrtc>=0.47.0",
+]
+gpu = [
+    "modal>=0.62.0",
+]
+
+[project.scripts]
+dishspace = "src.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"

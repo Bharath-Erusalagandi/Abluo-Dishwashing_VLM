@@ -1,0 +1,56 @@
+# Byte-compiled
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual env
+.venv/
+venv/
+env/
+robot-env/
+
+# Environment
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Distribution
+dist/
+build/
+*.egg-info/
+
+# Data (large files)
+data/raw/
+data/processed/
+data/training/
+*.bag
+*.ply
+*.pcd
+
+# Models (large files)
+models/checkpoints/
+models/lora/
+*.bin
+*.safetensors
+*.pt
+*.onnx
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test / Coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Logs
+*.log
+logs/
+
+# Minimax
+.minimax/
