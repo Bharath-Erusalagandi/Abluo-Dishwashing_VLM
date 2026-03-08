@@ -57,6 +57,7 @@ class Check:
     symbols: tuple[str, ...] = ()
     runtime_check: Callable[[], tuple[bool, str]] | None = None
     required: bool = True
+    runtime_required: bool = True
 
 
 def _check_torch_runtime() -> tuple[bool, str]:
@@ -169,7 +170,14 @@ CHECKS: tuple[Check, ...] = (
     Check("PIL", "Pillow>=11.0.0", "image processing", frozenset({"core", "train", "demo", "gpu"})),
     Check("scipy", "scipy>=1.14.0", "data processing", frozenset({"core", "train", "gpu"})),
     Check("open3d", "open3d>=0.18.0", "point cloud processing", frozenset({"core", "train", "gpu"})),
-    Check("mujoco", "mujoco>=3.2.0", "simulation / synthetic rendering", frozenset({"core", "train", "gpu"}), runtime_check=_check_mujoco_runtime),
+    Check(
+        "mujoco",
+        "mujoco>=3.2.0",
+        "simulation / synthetic rendering",
+        frozenset({"core", "train", "gpu"}),
+        runtime_check=_check_mujoco_runtime,
+        runtime_required=False,
+    ),
     Check("fastapi", "fastapi>=0.115.0", "API server", frozenset({"core", "api"}), symbols=("FastAPI", "HTTPException")),
     Check("uvicorn", "uvicorn[standard]>=0.32.0", "API serving", frozenset({"core", "api"}), symbols=("run",)),
     Check("pydantic", "pydantic>=2.10.0", "schemas", frozenset({"core", "api"}), symbols=("BaseModel", "Field")),
@@ -339,10 +347,13 @@ def main() -> int:
 
             if check.runtime_check is not None:
                 ok, detail = check.runtime_check()
-                color = GREEN if ok else RED
+                color = GREEN if ok else (RED if check.runtime_required else YELLOW)
                 print(f"    {color}{detail}{RESET}")
                 if not ok:
-                    failures.append((check, detail))
+                    if check.runtime_required:
+                        failures.append((check, detail))
+                    else:
+                        warnings.append(f"{check.import_name}: {detail}")
                 elif "CUDA: no" in detail:
                     warnings.append(detail)
         except ImportError as exc:
