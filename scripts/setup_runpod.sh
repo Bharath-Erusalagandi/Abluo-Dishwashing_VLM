@@ -45,11 +45,12 @@ if [[ "$INSTALL_SYSTEM_DEPS" == "true" ]]; then
       libegl-mesa0 \
       libgl1 \
       libgl1-mesa-dri \
-      libgl1-mesa-glx \
       libgles2 \
       libglfw3 \
       libglfw3-dev \
       libglew2.2 \
+      libgbm1 \
+      libdrm2 \
       libglvnd0 \
       libglx-mesa0 \
       libosmesa6 \
