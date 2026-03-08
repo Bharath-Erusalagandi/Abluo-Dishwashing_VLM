@@ -154,7 +154,7 @@ def _check_mujoco_runtime() -> tuple[bool, str]:
     return (
         False,
         "MuJoCo is installed but headless rendering failed for egl and osmesa. "
-        "Install system GL libs with: apt-get update && apt-get install -y libegl1 libgl1 libgles2 libglfw3 libosmesa6 libglib2.0-0 libxrender1 libxext6 libsm6",
+        "Install system GL libs with: apt-get update && apt-get install -y libegl1 libegl-mesa0 libgl1 libgl1-mesa-dri libgl1-mesa-glx libgles2 libglfw3 libglfw3-dev libglew2.2 libglvnd0 libglx-mesa0 libosmesa6 libosmesa6-dev libglib2.0-0 libglvnd-dev mesa-utils libxrender1 libxext6 libsm6",
     )
 
 
