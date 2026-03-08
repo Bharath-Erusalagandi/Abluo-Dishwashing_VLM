@@ -54,6 +54,8 @@ After setup, the important paths are:
 Preflight the environment before training:
 
 ```bash
+export MUJOCO_GL=osmesa
+export PYOPENGL_PLATFORM=osmesa
 python scripts/check_deps.py --profile train
 ```
 
@@ -68,6 +70,9 @@ Rendered dataset and training run:
 ```bash
 bash scripts/runpod_train.sh --samples 5000 --epochs 5 --include-failures
 ```
+
+The RunPod wrapper defaults to `MUJOCO_GL=osmesa` because that backend is more
+portable across headless pod images than `egl`.
 
 The wrapper stores outputs on the network volume by default:
 

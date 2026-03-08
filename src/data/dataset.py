@@ -22,10 +22,11 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
-# Force EGL (off-screen GPU) rendering for MuJoCo on headless servers.
+# Default to OSMesa on headless servers. It is slower than EGL but more reliable
+# across container images and avoids X11/GLFW failures when EGL is unavailable.
 # Must be set before mujoco is imported anywhere in the process.
-os.environ.setdefault("MUJOCO_GL", "egl")
-os.environ.setdefault("PYOPENGL_PLATFORM", "egl")
+os.environ.setdefault("MUJOCO_GL", "osmesa")
+os.environ.setdefault("PYOPENGL_PLATFORM", "osmesa")
 
 import numpy as np
 

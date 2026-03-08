@@ -6,9 +6,10 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 export DISHSPACE_ROOT="$ROOT_DIR"
 export RUNPOD_VOLUME_ROOT="${RUNPOD_VOLUME_ROOT:-/runpod-volume/dishspace}"
 export DATA_DIR="${DATA_DIR:-$RUNPOD_VOLUME_ROOT/data}"
-# Use EGL for headless GPU rendering (no X11/display required on RunPod)
-export MUJOCO_GL="${MUJOCO_GL:-egl}"
-export PYOPENGL_PLATFORM="${PYOPENGL_PLATFORM:-egl}"
+# Default to OSMesa for headless rendering because it is more reliable than EGL
+# across RunPod base images. Users can still override this per-shell.
+export MUJOCO_GL="${MUJOCO_GL:-osmesa}"
+export PYOPENGL_PLATFORM="${PYOPENGL_PLATFORM:-osmesa}"
 export MODELS_DIR="${MODELS_DIR:-$RUNPOD_VOLUME_ROOT/models}"
 export CACHE_DIR="${CACHE_DIR:-$RUNPOD_VOLUME_ROOT/cache}"
 export HF_HOME="${HF_HOME:-$CACHE_DIR/huggingface}"
