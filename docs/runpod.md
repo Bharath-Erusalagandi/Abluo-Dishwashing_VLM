@@ -20,14 +20,15 @@ Recommended mounted paths:
 From the repo root on the pod:
 
 ```bash
-bash scripts/setup_runpod.sh --install
+bash scripts/setup_runpod.sh --system-deps --install
 ```
 
 This will:
 
+- Install headless GL/EGL system libraries needed by MuJoCo on a headless pod.
 - Create volume-backed directories for data, models, cache, and logs.
 - Export environment variables for DishSpace paths.
-- Optionally install the project in editable mode with GPU dependencies.
+- Optionally install the project in editable mode with GPU, demo, and dev dependencies.
 
 ## Environment Layout
 
@@ -39,6 +40,12 @@ After setup, the important paths are:
 - `HF_HOME=/runpod-volume/dishspace/cache/huggingface`
 
 ## Training
+
+Preflight the environment before training:
+
+```bash
+python scripts/check_deps.py --profile train
+```
 
 Balanced metadata-only dry run:
 

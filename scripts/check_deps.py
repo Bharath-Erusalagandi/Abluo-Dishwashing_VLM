@@ -24,6 +24,7 @@ import re
 import subprocess
 import sys
 import tomllib
+import textwrap
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
@@ -97,44 +98,64 @@ def _check_peft_runtime() -> tuple[bool, str]:
     return True, "peft symbols ok"
 
 
-def _check_mujoco_runtime() -> tuple[bool, str]:
-    os.environ.setdefault("MUJOCO_GL", "egl")
-    os.environ.setdefault("PYOPENGL_PLATFORM", "egl")
+def _run_mujoco_backend_probe(backend: str) -> tuple[bool, str]:
+    probe = textwrap.dedent(
+        '''
+        import os
+        os.environ["MUJOCO_GL"] = BACKEND
+        os.environ["PYOPENGL_PLATFORM"] = BACKEND
+        import mujoco
 
+        xml = "<mujoco model=\"smoke\"><worldbody><light pos=\"0 0 2\"/><camera name=\"cam\" pos=\"0 -1 0.5\" xyaxes=\"1 0 0 0 0 1\"/><geom type=\"plane\" size=\"1 1 0.1\" rgba=\"0.8 0.8 0.8 1\"/><body pos=\"0 0 0.05\"><geom type=\"box\" size=\"0.05 0.05 0.05\" rgba=\"0.2 0.4 0.8 1\"/></body></worldbody></mujoco>"
+
+        model = mujoco.MjModel.from_xml_string(xml)
+        data = mujoco.MjData(model)
+        mujoco.mj_forward(model, data)
+        renderer = mujoco.Renderer(model, height=64, width=64)
+        try:
+            renderer.update_scene(data, camera="cam")
+            rgb = renderer.render()
+            renderer.enable_depth_rendering()
+            depth = renderer.render()
+            renderer.disable_depth_rendering()
+            assert rgb.shape == (64, 64, 3), rgb.shape
+            assert depth.shape == (64, 64), depth.shape
+        finally:
+            renderer.close()
+        print(f"ok:{mujoco.__version__}")
+        '''
+    ).replace("BACKEND", repr(backend))
+
+    result = subprocess.run(
+        [sys.executable, "-c", probe],
+        capture_output=True,
+        text=True,
+        env={**os.environ, "MUJOCO_GL": backend, "PYOPENGL_PLATFORM": backend},
+    )
+    if result.returncode == 0:
+        version = result.stdout.strip().split(":", 1)[-1] if result.stdout.strip() else "?"
+        return True, f"mujoco {version} | {backend} render smoke test passed"
+
+    error_text = (result.stderr or result.stdout).strip().splitlines()
+    detail = error_text[-1] if error_text else "unknown MuJoCo backend failure"
+    return False, detail
+
+
+def _check_mujoco_runtime() -> tuple[bool, str]:
     import mujoco
 
-    xml = """
-    <mujoco model="smoke">
-      <worldbody>
-        <light pos="0 0 2"/>
-        <camera name="cam" pos="0 -1 0.5" xyaxes="1 0 0 0 0 1"/>
-        <geom type="plane" size="1 1 0.1" rgba="0.8 0.8 0.8 1"/>
-        <body pos="0 0 0.05">
-          <geom type="box" size="0.05 0.05 0.05" rgba="0.2 0.4 0.8 1"/>
-        </body>
-      </worldbody>
-    </mujoco>
-    """.strip()
+    for backend in ("egl", "osmesa"):
+        ok, detail = _run_mujoco_backend_probe(backend)
+        if ok:
+            if backend == "osmesa":
+                return True, f"mujoco {mujoco.__version__} | osmesa render smoke test passed (set MUJOCO_GL=osmesa for CPU rendering)"
+            return True, detail
 
-    model = mujoco.MjModel.from_xml_string(xml)
-    data = mujoco.MjData(model)
-    mujoco.mj_forward(model, data)
-
-    renderer = mujoco.Renderer(model, height=64, width=64)
-    try:
-        renderer.update_scene(data, camera="cam")
-        rgb = renderer.render()
-        renderer.enable_depth_rendering()
-        depth = renderer.render()
-        renderer.disable_depth_rendering()
-    finally:
-        renderer.close()
-
-    if getattr(rgb, "shape", None) != (64, 64, 3):
-        return False, f"unexpected RGB shape from MuJoCo renderer: {getattr(rgb, 'shape', None)}"
-    if getattr(depth, "shape", None) != (64, 64):
-        return False, f"unexpected depth shape from MuJoCo renderer: {getattr(depth, 'shape', None)}"
-    return True, f"mujoco {mujoco.__version__} | EGL render smoke test passed"
+    return (
+        False,
+        "MuJoCo is installed but headless rendering failed for egl and osmesa. "
+        "Install system GL libs with: apt-get update && apt-get install -y libegl1 libgl1 libgles2 libglfw3 libosmesa6 libglib2.0-0 libxrender1 libxext6 libsm6",
+    )
 
 
 CHECKS: tuple[Check, ...] = (
@@ -333,7 +354,7 @@ def main() -> int:
                 warnings.append(f"{label}: {message}")
                 print(f"  {YELLOW}△ {check.import_name}{RESET}  {message}")
         except Exception as exc:
-            failures.append((check, str(exc)))
+            failures.append((check, f"runtime failure: {exc}"))
             print(f"  {RED}✗ {check.import_name}{RESET}  runtime failure: {exc}")
 
     print(f"\n{BOLD}Summary{RESET}")
@@ -365,7 +386,10 @@ def main() -> int:
     if failures:
         print(f"\n{BOLD}Failures{RESET}")
         for check, reason in failures:
-            print(f"  pip install \"{check.pip_spec}\"  # {check.purpose}")
+            if reason.startswith("missing import:"):
+                print(f"  pip install \"{check.pip_spec}\"  # {check.purpose}")
+            else:
+                print(f"  {check.import_name}: runtime fix required  # {check.purpose}")
             print(f"    reason: {reason}")
         print("\nRecommended full install for this repo:")
         print("  pip install -e '.[dev,gpu,demo]'")

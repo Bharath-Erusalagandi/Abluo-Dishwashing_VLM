@@ -17,6 +17,8 @@ export HUGGINGFACE_HUB_CACHE="${HUGGINGFACE_HUB_CACHE:-$HF_HOME/hub}"
 
 mkdir -p "$DATA_DIR/training/runpod" "$MODELS_DIR/dora" "$CACHE_DIR" "$HF_HOME" "$TRANSFORMERS_CACHE" "$HUGGINGFACE_HUB_CACHE"
 
+python "$ROOT_DIR/scripts/check_deps.py" --profile train
+
 exec python "$ROOT_DIR/scripts/train.py" \
   --data-dir "$DATA_DIR/training/runpod" \
   --output-dir "$MODELS_DIR/dora/kitchen_v1" \
