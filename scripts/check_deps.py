@@ -72,31 +72,45 @@ def _check_torch_runtime() -> tuple[bool, str]:
 
 
 def _check_transformers_runtime() -> tuple[bool, str]:
-    from transformers import AutoModel, AutoModelForCausalLM, AutoProcessor, Trainer, TrainingArguments
-
-    model_class = "AutoModelForCausalLM"
     try:
-        from transformers import AutoModelForVision2Seq  # type: ignore
+        from transformers import AutoModel, AutoModelForCausalLM, AutoProcessor, Trainer, TrainingArguments
 
-        _ = AutoModelForVision2Seq
-        model_class = "AutoModelForVision2Seq"
-    except ImportError:
-        _ = AutoModel
+        model_class = "AutoModelForCausalLM"
+        try:
+            from transformers import AutoModelForVision2Seq  # type: ignore
 
-    _ = AutoProcessor
-    _ = Trainer
-    _ = TrainingArguments
-    _ = AutoModelForCausalLM
-    return True, f"transformers symbols ok | preferred model class: {model_class}"
+            _ = AutoModelForVision2Seq
+            model_class = "AutoModelForVision2Seq"
+        except ImportError:
+            _ = AutoModel
+
+        _ = AutoProcessor
+        _ = Trainer
+        _ = TrainingArguments
+        _ = AutoModelForCausalLM
+        return True, f"transformers symbols ok | preferred model class: {model_class}"
+    except Exception as exc:
+        cause = exc.__cause__ or exc.__context__
+        detail = f"{type(exc).__name__}: {exc}"
+        if cause is not None:
+            detail += f" | cause: {type(cause).__name__}: {cause}"
+        return False, f"transformers runtime import failed: {detail}"
 
 
 def _check_peft_runtime() -> tuple[bool, str]:
-    from peft import LoraConfig, PeftModel, get_peft_model
+    try:
+        from peft import LoraConfig, PeftModel, get_peft_model
 
-    _ = LoraConfig
-    _ = PeftModel
-    _ = get_peft_model
-    return True, "peft symbols ok"
+        _ = LoraConfig
+        _ = PeftModel
+        _ = get_peft_model
+        return True, "peft symbols ok"
+    except Exception as exc:
+        cause = exc.__cause__ or exc.__context__
+        detail = f"{type(exc).__name__}: {exc}"
+        if cause is not None:
+            detail += f" | cause: {type(cause).__name__}: {cause}"
+        return False, f"peft runtime import failed: {detail}"
 
 
 def _run_mujoco_backend_probe(backend: str) -> tuple[bool, str]:
@@ -161,8 +175,8 @@ def _check_mujoco_runtime() -> tuple[bool, str]:
 
 CHECKS: tuple[Check, ...] = (
     Check("torch", "torch>=2.5.0", "training runtime", frozenset({"core", "train", "gpu"}), runtime_check=_check_torch_runtime),
-    Check("transformers", "transformers>=4.47.0", "model loading / trainer", frozenset({"core", "train", "gpu"}), symbols=("AutoProcessor", "Trainer", "TrainingArguments", "AutoModel", "AutoModelForCausalLM"), runtime_check=_check_transformers_runtime),
-    Check("peft", "peft>=0.14.0", "LoRA / DoRA adapters", frozenset({"core", "train", "gpu"}), symbols=("LoraConfig", "PeftModel", "get_peft_model"), runtime_check=_check_peft_runtime),
+    Check("transformers", "transformers>=4.47.0", "model loading / trainer", frozenset({"core", "train", "gpu"}), runtime_check=_check_transformers_runtime),
+    Check("peft", "peft>=0.14.0", "LoRA / DoRA adapters", frozenset({"core", "train", "gpu"}), runtime_check=_check_peft_runtime),
     Check("accelerate", "accelerate>=0.35.0", "device_map / distributed helpers", frozenset({"core", "train", "gpu"})),
     Check("diffusers", "diffusers>=0.31.0", "modal image / model stack", frozenset({"core", "train", "gpu"})),
     Check("numpy", "numpy>=1.26.0", "numerics", frozenset({"core", "train", "api", "demo", "dev", "gpu"})),
