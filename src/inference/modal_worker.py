@@ -48,8 +48,6 @@ if MODAL_AVAILABLE:
             "scipy>=1.14.0",
             "mujoco>=3.2.0",
             "structlog>=24.4.0",
-            "segment-anything-2>=0.1.0",
-            "groundingdino>=0.1.0",
         )
     )
 

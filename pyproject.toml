@@ -34,11 +34,6 @@ dependencies = [
     "Pillow>=11.0.0",
     "scipy>=1.14.0",
 
-    # Depth & Segmentation Foundation Models
-    "depth-anything-v2>=0.1.0",
-    "segment-anything-2>=0.1.0",
-    "groundingdino>=0.1.0",
-
     # Simulation
     "mujoco>=3.2.0",
 
