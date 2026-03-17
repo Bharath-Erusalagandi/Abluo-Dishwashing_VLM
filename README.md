@@ -2,7 +2,7 @@
 
 DishSpace is a kitchen-manipulation training and evaluation stack for robot arms that need to deal with real sink scenes: clutter, wet surfaces, transparent glass, reflective metal, stacked dishes, and dishwasher loading.
 
-## North Star
+## Goal
 
 The end goal is not a single demo grasp endpoint. The end goal is a robot policy that can:
 
@@ -52,17 +52,3 @@ That is the right first phase, but it is not yet the full sink-to-dishwasher sys
 - Real cluttered sink scenes, not only isolated object crops.
 - Both successful and failed attempts retained for evaluation and recovery modeling.
 - Benchmark categories that stress clutter, occlusion, wetness, utensil entanglement, and placement.
-
-## Immediate Priorities
-
-1. Increase dataset scale beyond smoke-test sizes.
-2. Train on balanced kitchen coverage.
-3. Make failure filtering explicit instead of implicit.
-4. Use sink-scene benchmarks as the default success criteria.
-5. Keep task sequencing as the next phase after grasp performance is credible.
-
-## Runpod
-
-The laptop is no longer the right execution environment for large synthetic datasets or model training. The repo now supports moving data, models, and Hugging Face cache onto a Runpod network volume.
-
-Setup and usage are documented in [docs/runpod.md](/Users/bharath/Desktop/Working/robot/docs/runpod.md).
