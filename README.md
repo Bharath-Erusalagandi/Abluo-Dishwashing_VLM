@@ -1,6 +1,6 @@
 ## Abluo
 
-DishSpace is a kitchen-manipulation training and evaluation stack for robot arms that need to deal with real sink scenes: clutter, wet surfaces, transparent glass, reflective metal, stacked dishes, and dishwasher loading.
+Abluo is a kitchen-manipulation training and evaluation stack for robot arms that need to deal with real sink scenes: clutter, wet surfaces, transparent glass, reflective metal, stacked dishes, and dishwasher loading.
 
 ## Goal
 
